@@ -1,0 +1,3 @@
+nibabel
+celluloid
+matplotlib
