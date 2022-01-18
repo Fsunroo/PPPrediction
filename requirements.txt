@@ -1,3 +1,5 @@
 nibabel
 celluloid
 matplotlib
+tensorflow
+pandas
