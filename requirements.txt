@@ -3,3 +3,4 @@ celluloid
 matplotlib
 tensorflow
 pandas
+sklearn
