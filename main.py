@@ -134,15 +134,7 @@ model.fit(
 )
 
 model.evaluate(X_test,y_test)
-
-
-test = read_single('path')
-test_x = test[selected_nodes_1d]
-result = model.predict(test_x)
 model.save('model99.hdf5')
-
-
-animate(x,y,result,'99predicted-bymodelV0.0.gif')
 
 
 animate(x,y,Y,'99sens.gif',max=350)
