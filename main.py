@@ -1,64 +1,50 @@
-import nibabel as nib
+
 import os
 import numpy as np
 import tensorflow as tf
 import pandas as pd
 from sklearn.model_selection import train_test_split
-base_dir = '/home/fhd/projects/.DATASETS/HealthyControls/'
-ind_dir = os.path.join(base_dir,'C01')
-rec_path = os.path.join(ind_dir,'left_foot_trial_21.nii')
+import csv
+import matplotlib.pyplot as plt
+base_dir = '/home/fhd/projects/frelnc/signal/cnnmodel/data/'
+rec_path = os.path.join(base_dir,'Patient_03_zool2_links.asc')
 
-#defing necessary functoins
-def read_single(img_path:str) -> np.memmap:
-    '''function that gets the path of a single record and returns the memmap array in shape of (36,20,:)'''
-    img = nib.load(img_path)
-    try:
-        data = img.get_fdata()
-        if not (data.shape[1] <20 or data.shape[0] < 35):
-            return img.get_fdata()[:35,:20,:]
-    except :
-        return None
 
-def read_all(all_path:list) -> pd.DataFrame:
-    '''get list of paths and returns of Y memmap of all records shape of (36,20,:)'''
-    Y = np.zeros((35,20,0)) # initiating Y 
-    #reading all images
-    for path in all_path:
-        arr = read_single(os.path.join(ind_dir,path))
-        if type(arr)==np.memmap: Y = np.append(Y,arr,axis=2) #appending to Y
-    return Y
-    
-def preprocess(memmap:np.memmap) -> pd.DataFrame:
-    memmap = memmap.reshape(-1, memmap.shape[-1])
-    return pd.DataFrame(memmap).T
+#defining necessary functions
+def read_single(rec_path:str,Left=True) -> pd.DataFrame:
+    f = open(rec_path,'r').readlines()
+    f=[i.strip() for i in f][10:]
+    f=[i.split('\t') for i in f]
+    df = pd.DataFrame(f).drop(0,axis=1)
+
+    df=df.astype(float)
+    if Left:
+        df= df[[i for i in range(1,100)]]
+    else:
+        df= df[[i for i in range(100,199)]]
+
+    for i in range(len(df)):
+        if df.loc[i].any()==0:
+            df = df.drop(i,axis=0)
+    df = df.reset_index().drop('index',axis=1)
+    return df
+
+def read_all(path:str) -> pd.DataFrame:
+    df= pd.DataFrame()
+    for file in os.listdir(path):
+        if file.endswith('asc'):
+            df = df.append(read_single(os.path.join(path,file)))
+    return df.reset_index().drop('index',axis=1)
 
 def create_model():
     model = tf.keras.Sequential()
-    model.add(tf.keras.Input(shape=(10,)))
+    model.add(tf.keras.Input(shape=(12,)))
     model.add(tf.keras.layers.Dense(16,activation='relu'))
     model.add(tf.keras.layers.Dense(32,activation='relu'))
     model.add(tf.keras.layers.Dense(64,activation='relu'))
-    model.add(tf.keras.layers.Dense(128,activation='relu'))
-    model.add(tf.keras.layers.Dense(256,activation='relu'))
-    model.add(tf.keras.layers.Dense(512,activation='relu'))
-    model.add(tf.keras.layers.Dense(700,activation='linear'))
+    model.add(tf.keras.layers.Dense(99,activation='linear'))
     model.compile(optimizer='adam', loss='mse',metrics=['MeanSquaredError',])
     return model
-
-def get_all_path( Left:bool =True, ex=None,inc=None) -> list:
-    '''if you want the left foot then put True else Flase, parameter ex excludes from output'''
-    all_path=[]
-    for folder in list(os.walk(base_dir)):
-        for filename in folder[2]:
-            if Left:
-                if 'left' in filename:
-                    all_path.append(os.path.join(folder[0],filename))
-            else:
-                if 'right' in filename:
-                    all_path.append(os.path.join(folder[0],filename))
-    if ex: all_path= list(filter(lambda x: ex not in x,all_path))
-    elif inc: all_path= list(filter(lambda x: inc in x,all_path))
-    return all_path
 
 def animate(result,name):
     import matplotlib.pyplot as plt
@@ -78,20 +64,66 @@ def convert_2dIndex_to_1d(index):
     x,y = index
     _,Y = shape
     return x*Y+y
-        
 
-#making Y dataset
-all_path = get_all_path(ex='C31')
-Y = read_all(all_path)
-Y = preprocess(Y)
+def read_input(INPUT):
+    x_input,y_input,p=[],[],[]
+    with open(INPUT, newline='') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            x_input.append(row[0])
+            y_input.append(row[1])
+            p.append(row[2])
+        f.close()
+    x_input = np.array(x_input[1:],dtype=float)
+    y_input = np.array(y_input[1:],dtype=float)
+    p = np.array(p[1:],dtype=float)
+    return x_input,y_input,p
 
-#making X dataset
-selected_nodes_2d =[(14,4),(11,4),(5,21),(3,22),(10,27),(7,32),(6,30),(9,32),(12,27),(6,23)]
-selected_nodes_1d = list(map(convert_2dIndex_to_1d,selected_nodes_2d))
+def animate(x:np.array,y:np.array,result:pd.DataFrame,name:str,max=300,):
+    import matplotlib.pyplot as plt
+    from celluloid import Camera
+    fig = plt.figure(figsize=(3,6))
+    camera = Camera(fig)
+    for i in range(len(result)):
+        plt.tricontourf(x,y,result.loc[i],cmap='Reds')
+        plt.title(i)
+        if i:
+            camera.snap()
+        if i==max: break
+    animation = camera.animate()
+    animation.save(os.path.join('output',name),fps=70)
+
+def calculate_dist(pointa,pointb):
+    xa,ya=pointa
+    xb,yb=pointb
+    return ((xa-xb)**2 + (ya-yb)**2)**0.5
+
+def find_nearest(array, point):
+    idx = np.asarray([calculate_dist(cordinate,point) for cordinate in cordinates]).argmin()
+    return array[idx]
+
+
+Y = read_all(base_dir)
+x,y,_ = read_input('/home/fhd/projects/frelnc/signal/compress1/input.csv')
+cordinates = [(i,j) for i,j in zip (x,y)]
+
+
+
+selected_nodes_2d =[(4.99,3.3),(3.66,3.3),(6.32,3.3),(4.99,4.6), #posterior
+                    (7.6,12.4),(7.6,11.1),(6.2,11.1),           #Lateral
+                    (4.68,12.4),                                #Median
+                    (8.58,17.6),                                #AntroLateral
+                    (1,18.9),                                   #AntroMedial
+                    (1.55, 15.0),(3.1, 15.0),                   #Medial
+                    ]                      
+                    
+selected_nodes_1d = list(map(lambda x : cordinates.index(x),selected_nodes_2d))
 X = Y[selected_nodes_1d]
 
-# Splitting datasets
+
+
 X_train, X_test, y_train, y_test = train_test_split( X, Y, test_size=0.2, shuffle =False)
+
 
 model = create_model()
 
@@ -101,21 +133,16 @@ model.fit(
     workers=2, use_multiprocessing=True
 )
 
-#making plot dataset
-test_path = get_all_path(inc='C31')
-Yplot = read_all(test_path)
-Yplot = preprocess(Yplot)
-Xplot = Yplot[selected_nodes_1d]
+model.evaluate(X_test,y_test)
 
-#predicting results for Xplot
-results = model.predict(Xplot)
 
-#predicting result for ploting
-result = results.T
-result = result.reshape(35,20,result.shape[-1])
+test = read_single('path')
+test_x = test[selected_nodes_1d]
+result = model.predict(test_x)
+model.save('model99.hdf5')
 
-#making animation
-animate(result[:,:,:350],'model-10input-first350-epoch5-fps70.gif')
 
-#saving the model
-model.save('model.hdf5')
+animate(x,y,result,'99predicted-bymodelV0.0.gif')
+
+
+animate(x,y,Y,'99sens.gif',max=350)
