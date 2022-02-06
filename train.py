@@ -1,8 +1,8 @@
 from sklearn.model_selection import train_test_split
 from utils import *
 
-base_dir = '/home/fhd/projects/frelnc/signal/cnnmodel/data/'
-input_path = '/home/fhd/projects/frelnc/signal/compress1/input.csv'
+base_dir = os.path.join('data')
+input_path = os.path.join('input.csv')
 
 x,y,selected_nodes_1d = get_selected_nodes_1d(input_path)
 Y = read_all(base_dir)

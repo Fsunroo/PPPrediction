@@ -1,12 +1,17 @@
+from ast import Break
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 import tensorflow as tf
 from utils import *
 
-test_path = '/home/fhd/projects/frelnc/signal/cnnmodel/data/Patient_03_zool2_links.asc'
-model_path ='/home/fhd/projects/frelnc/signal/cnnmodel/output/model99.hdf5'
-input_path = '/home/fhd/projects/frelnc/signal/compress1/input.csv'
 
+test_dir= os.path.join('predict')
+model_path =os.path.join('output','model99.hdf5')
+input_path = os.path.join('input.csv')
+
+test_files = list(filter(lambda x : x.endswith('.asc'), [file for file in  os.listdir(test_dir)]))
+if len (test_files )== 1: test_path = os.path.join(test_dir,test_files[0])
+else:raise Exception('Please put only one file in predict folder')
 
 
 x,y,selected_nodes_1d = get_selected_nodes_1d(input_path)
