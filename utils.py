@@ -3,7 +3,9 @@ import tensorflow as tf
 import pandas as pd
 import csv
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import os
+
 #defining necessary functions
 def read_single(rec_path:str,Left=True) -> pd.DataFrame:
     f = open(rec_path,'r').readlines()
@@ -40,20 +42,6 @@ def create_model():
     model.compile(optimizer='adam', loss='mse',metrics=['MeanSquaredError',])
     return model
 
-def animate(result,name):
-    import matplotlib.pyplot as plt
-    from celluloid import Camera
-    fig = plt.figure(figsize=(3,6))
-    camera = Camera(fig)
-    for i in range (result.shape[2]):
-        plt.contourf(result[:,:,i],cmap='Reds')
-        plt.title(i)
-        if i:
-            camera.snap()
-    animation = camera.animate()
-    if not 'output' in os.listdir(): os.mkdir('output')
-    animation.save(os.path.join('output',name),fps=70)
-
 def mse(y_true,y_pred):
     difference_array = np.subtract(y_true, y_pred)
     squared_array = np.square(difference_array)
@@ -80,21 +68,21 @@ def read_input(INPUT):
     p = np.array(p[1:],dtype=float)
     return x_input,y_input,p
 
-def animate(x:np.array,y:np.array,result:pd.DataFrame,name:str,max=300,):
-    import matplotlib.pyplot as plt
-    from celluloid import Camera
-    fig = plt.figure(figsize=(3,6))
-    camera = Camera(fig)
-    if type(result)==np.ndarray:result = pd.DataFrame(result)
-    for i in range(len(result)):
-        plt.tricontourf(x,y,result.loc[i],cmap='Reds')
-        plt.title(i)
-        if i:
-            camera.snap()
-        if i==max: break
-    animation = camera.animate()
+def animate(x:np.array,y:np.array,result:pd.DataFrame,name:str,max=300):
     if not 'output' in os.listdir(): os.mkdir('output')
-    animation.save(os.path.join('output',name),fps=70)
+    if type(result)==pd.DataFrame:
+        result = result.to_numpy()
+    result=result[:max]
+    fig, ax=plt.subplots(figsize=(3,6))
+    p = [ax.tricontourf(x,y,result[0],cmap='Reds')]
+    def update(i):
+        for tp in p[0].collections:
+            tp.remove()
+        p[0] = ax.tricontourf(x,y,result[i],cmap='Reds') 
+        return p[0].collections
+
+    ani = animation.FuncAnimation(fig, update, blit=True, repeat=True)
+    ani.save(os.path.join('output',name), fps=30)
 
 def calculate_dist(pointa,pointb):
     xa,ya=pointa
@@ -104,7 +92,6 @@ def calculate_dist(pointa,pointb):
 def find_nearest(array, point,cordinates):
     idx = np.asarray([calculate_dist(cordinate,point) for cordinate in cordinates]).argmin()
     return array[idx]
-
 
 def get_selected_nodes_1d(input_path):
     x,y,_ = read_input(input_path)
