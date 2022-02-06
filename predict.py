@@ -1,3 +1,5 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 import tensorflow as tf
 from utils import *
 
@@ -13,9 +15,15 @@ test_x = test[selected_nodes_1d]
 
 
 model = tf.keras.models.load_model(model_path)
+print('model loaded successfully')
+print('prediction started...')
 result = model.predict(test_x)
-acc = mse(test.to_numpy(),result)
-print('mse is: ',acc)
+print('prediction Done')
+ms = mse(test.to_numpy(),result)
+ma = mae(test.to_numpy(),result)
+rm = rmse(test.to_numpy(),result)
+print_result([ms,ms,ma,rm])
 
+print('\n\n\nAnimating the predicted data...')
 animate(x,y,result,'99predicted-bymodelV0.0.gif')
-print('your prediction result is at output folder')
+print('Your prediction result is in output folder')

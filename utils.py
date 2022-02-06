@@ -111,6 +111,13 @@ def find_nearest(array, point,cordinates):
     idx = np.asarray([calculate_dist(cordinate,point) for cordinate in cordinates]).argmin()
     return array[idx]
 
+def print_result(res):
+    print('\n\nmoodel evalutaion result:')
+    print ("{:<15} {:<20} {:<20} {:<20} {:<20}".format('Metrics','loss','MeanSqureError','MeanAbsoluteError','RootMeanSquaredError'))
+    #for k, v in res.items():
+    l, ms, ma,rm = res
+    print ("{:<15} {:<20} {:<20} {:<20} {:<20}".format('Value', l, ms, ma, rm))
+
 def get_selected_nodes_1d(input_path):
     x,y,_ = read_input(input_path)
     cordinates = [(i,j) for i,j in zip (x,y)]

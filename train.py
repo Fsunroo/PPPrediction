@@ -23,13 +23,8 @@ model.save(os.path.join('output','model99.hdf5'))
 print('Model saved successfully')
 print('\n\n\n\nEvaluating model...')
 res = model.evaluate(X_test,y_test)
-#res = parse_result(res)
 
-print('\n\nmoodel evalutaion result:')
-print ("{:<15} {:<20} {:<20} {:<20} {:<20}".format('Metrics','loss','MeanSqureError','MeanAbsoluteError','RootMeanSquaredError'))
-#for k, v in res.items():
-l, ms, ma,rm = res
-print ("{:<15} {:<20} {:<20} {:<20} {:<20}".format('Value', l, ms, ma, rm))
+print_result(res)
 
 print('\n\n\n\n\nAnimating the grandTruth...')
 animate(x,y,Y,'99sens.gif',max=350)
