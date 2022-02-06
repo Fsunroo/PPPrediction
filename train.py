@@ -16,16 +16,16 @@ model.fit(
     validation_split=0.2, validation_data=None, shuffle=True,
     workers=2, use_multiprocessing=True
 )
+print('model trained successfully') 
 if not os.path.exists('output'):
     os.makedirs('output')
 model.save(os.path.join('output','model99.hdf5'))
 print('Model saved successfully')
-print('\n\n\n\n\n\n\nmodel trained successfully') 
-print('Evaluating model...')
+print('\n\n\n\nEvaluating model...')
 res = model.evaluate(X_test,y_test)
 #res = parse_result(res)
 
-print('\n\n\n\n\nmoodel evalutaion result:')
+print('\n\nmoodel evalutaion result:')
 print ("{:<15} {:<20} {:<20} {:<20} {:<20}".format('Metrics','loss','MeanSqureError','MeanAbsoluteError','RootMeanSquaredError'))
 #for k, v in res.items():
 l, ms, ma,rm = res
