@@ -1,8 +1,8 @@
 import tensorflow as tf
 from utils import *
 
-test_path = '/home/fhd/projects/frelnc/signal/cnnmodel/Patient_03_zool2_links.asc'
-model_path ='/home/fhd/projects/frelnc/signal/cnnmodel/model99.hdf5'
+test_path = '/home/fhd/projects/frelnc/signal/cnnmodel/data/Patient_03_zool2_links.asc'
+model_path ='/home/fhd/projects/frelnc/signal/cnnmodel/output/model99.hdf5'
 input_path = '/home/fhd/projects/frelnc/signal/compress1/input.csv'
 
 
