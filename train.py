@@ -4,7 +4,6 @@ from sklearn.model_selection import train_test_split
 from utils import *
 
 base_dir = '/home/fhd/projects/frelnc/signal/cnnmodel/data/'
-rec_path = os.path.join(base_dir,'Patient_03_zool2_links.asc')
 input_path = '/home/fhd/projects/frelnc/signal/compress1/input.csv'
 
 
