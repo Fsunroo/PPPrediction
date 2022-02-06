@@ -1,10 +1,11 @@
+import os
 import numpy as np
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 import tensorflow as tf
 import pandas as pd
 import csv
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import os
 
 #defining necessary functions
 def read_single(rec_path:str,Left=True) -> pd.DataFrame:
@@ -39,14 +40,31 @@ def create_model():
     model.add(tf.keras.layers.Dense(32,activation='relu'))
     model.add(tf.keras.layers.Dense(64,activation='relu'))
     model.add(tf.keras.layers.Dense(99,activation='linear'))
-    model.compile(optimizer='adam', loss='mse',metrics=['MeanSquaredError',])
+    model.compile(optimizer='adam', loss='mse',metrics=['MeanSquaredError','MeanAbsoluteError','RootMeanSquaredError'])
     return model
+
+def parse_result(result:list) -> dict:
+    result_dict = {}
+    result_dict['loss'] = result[0]
+    result_dict['MeanSquaredError'] = result[1]
+    result_dict['MeanAbsoluteError'] = result[2]
+    result_dict['RootMeanSquaredError'] = result[3]
+    return result_dict
 
 def mse(y_true,y_pred):
     difference_array = np.subtract(y_true, y_pred)
     squared_array = np.square(difference_array)
     mse = squared_array.mean()
     return mse
+
+def mae(y_true,y_pred):
+    difference_array = np.subtract(y_true, y_pred)
+    abs_array = np.absolute(difference_array)
+    mae = abs_array.mean()
+    return mae
+
+def rmse(y_true,y_pred):
+    return np.sqrt(mse(y_true,y_pred))
 
 def convert_2dIndex_to_1d(index):
     shape = (35,20)
