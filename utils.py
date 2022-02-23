@@ -130,5 +130,5 @@ def get_selected_nodes_1d(input_path):
                         (1.55, 15.0),(3.1, 15.0),                   #Medial
                         ]                      
                         
-    selected_nodes_1d = list(map(lambda x : cordinates.index(x),selected_nodes_2d))
+    selected_nodes_1d = list(map(lambda x : cordinates.index(x) +1 ,selected_nodes_2d))
     return x,y,selected_nodes_1d
