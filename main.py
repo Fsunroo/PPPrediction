@@ -4,6 +4,9 @@ import numpy as np
 import tensorflow as tf
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
 base_dir = '/home/fhd/projects/.DATASETS/HealthyControls/'
 ind_dir = os.path.join(base_dir,'C01')
 rec_path = os.path.join(ind_dir,'left_foot_trial_21.nii')
@@ -60,18 +63,21 @@ def get_all_path( Left:bool =True, ex=None,inc=None) -> list:
     elif inc: all_path= list(filter(lambda x: inc in x,all_path))
     return all_path
 
-def animate(result,name):
-    import matplotlib.pyplot as plt
-    from celluloid import Camera
-    fig = plt.figure(figsize=(3,6))
-    camera = Camera(fig)
-    for i in range (result.shape[2]):
-        plt.contourf(result[:,:,i],cmap='Reds')
-        plt.title(i)
-        if i:
-            camera.snap()
-    animation = camera.animate()
-    animation.save(os.path.join('output',name),fps=70)
+def animate(x:np.array,y:np.array,result:pd.DataFrame,name:str,max=300):
+    if not 'output' in os.listdir(): os.mkdir('output')
+    if type(result)==pd.DataFrame:
+        result = result.to_numpy()
+    result=result[:max]
+    fig, ax=plt.subplots(figsize=(3,6))
+    p = [ax.tricontourf(x,y,result[0],cmap='Reds')]
+    def update(i):
+        for tp in p[0].collections:
+            tp.remove()
+        p[0] = ax.tricontourf(x,y,result[i],cmap='Reds') 
+        return p[0].collections
+
+    ani = animation.FuncAnimation(fig, update, blit=True, repeat=True)
+    ani.save(os.path.join('output',name), fps=30)
 
 def convert_2dIndex_to_1d(index):
     shape = (35,20)
@@ -115,7 +121,7 @@ result = results.T
 result = result.reshape(35,20,result.shape[-1])
 
 #making animation
-animate(result[:,:,:350],'model-10input-first350-epoch5-fps70.gif')
+animate(x,y,result[:,:,:350],'new_model_10_5_700.gif')
 
 #saving the model
 model.save('model.hdf5')
