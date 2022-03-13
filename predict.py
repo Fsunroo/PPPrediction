@@ -29,6 +29,7 @@ ma = mae(test.to_numpy(),result)
 rm = rmse(test.to_numpy(),result)
 print_result([ms,ms,ma,rm])
 
+
 print('\n\n\nAnimating the predicted data...')
 animate(x,y,result,'99predicted-bymodelV0.0.gif')
 print('Your prediction result is in output folder')
