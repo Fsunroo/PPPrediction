@@ -6,10 +6,12 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import csv
 
 base_dir = '/home/fhd/projects/.DATASETS/HealthyControls/'
 ind_dir = os.path.join(base_dir,'C01')
 rec_path = os.path.join(ind_dir,'left_foot_trial_21.nii')
+INPUT = 'input.csv'
 
 #defing necessary functoins
 def read_single(img_path:str) -> np.memmap:
@@ -62,6 +64,20 @@ def get_all_path( Left:bool =True, ex=None,inc=None) -> list:
     if ex: all_path= list(filter(lambda x: ex not in x,all_path))
     elif inc: all_path= list(filter(lambda x: inc in x,all_path))
     return all_path
+
+def read_input(INPUT):
+    x_input,y_input,p=[],[],[]
+    with open(INPUT, newline='') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            x_input.append(row[0])
+            y_input.append(row[1])
+            p.append(row[2])
+        f.close()
+    x_input = np.array(x_input[1:],dtype=float)
+    y_input = np.array(y_input[1:],dtype=float)
+    p = np.array(p[1:],dtype=float)
+    return x_input,y_input,p
 
 def animate(x:np.array,y:np.array,result:pd.DataFrame,name:str,max=300):
     if not 'output' in os.listdir(): os.mkdir('output')
@@ -121,7 +137,8 @@ result = results.T
 result = result.reshape(35,20,result.shape[-1])
 
 #making animation
-animate(x,y,result[:,:,:350],'new_model_10_5_700.gif')
+x,y,_ = read_input(INPUT)
+animate(x,y,result,'new_animation_10_nodes_5_epoch_700.mp4')
 
 #saving the model
 model.save('model.hdf5')
