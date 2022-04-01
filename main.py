@@ -47,7 +47,7 @@ def create_model():
     model.add(tf.keras.layers.Dense(256,activation='relu'))
     model.add(tf.keras.layers.Dense(512,activation='relu'))
     model.add(tf.keras.layers.Dense(700,activation='linear'))
-    model.compile(optimizer='adam', loss='mse',metrics=['MeanSquaredError','mae'])
+    model.compile(optimizer='adam', loss='rmse',metrics=['MeanSquaredError','mae', 'rmse'])
     return model
 
 def get_all_path( Left:bool =True, ex=None,inc=None) -> list:
@@ -124,7 +124,7 @@ model.fit(
 )
 
 re = model.evaluate(X_test,y_test)
-print('loss, mse, mae',re)
+print('loss, mse, mae, rmse',re)
 
 #making plot dataset
 test_path = get_all_path(inc='C31')

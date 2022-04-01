@@ -1,0 +1,2 @@
+['loss', 'mean_squared_error', 'mean_absolute_error', 'root_mean_squared_error']
+[4.4267144203186035, 21.521257400512695, 1.9758867025375366, 4.639099597930908]
